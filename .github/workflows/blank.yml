@@ -11,24 +11,31 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
+    name: Build Web
+    env:
+      my_secret: ${{secrets.commit_secret}}
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter config --enable-web
+      - run: flutter pub get
+      - run: flutter build web --release
+      - run: |
+          cd build/web
+          git init
+          # type configurations: your user.email and user.name followed lines 
+          # git config --global user.email your_email 
+          # git config --global user.name your_name 
+          git config --global user.email p.h.ferreirah@gmail.com
+          git config --global user.name  Paulo Henrique Ferreira
+          git status
+          git remote add origin https://${{secrets.commit_secret}}@github.com/phferreira/phferreira.github.io.git
+          git checkout -b master
+          git add --all
+          git commit -m "update"
+          git push origin master -f  
